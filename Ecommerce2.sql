@@ -12,14 +12,9 @@ date DATE
 ALTER TABLE Customers
 MODIFY Customer_number VARCHAR(15);
 
-	
-    
-    
-    
-    
 CREATE TABLE Products(
-Productid INT PRIMARY KEY,
-Products_name VARCHAR(50),
+Product_id INT PRIMARY KEY,
+Product_name VARCHAR(50),
 category VARCHAR(50),
 price INT,
 stock_quantity INT,
@@ -40,11 +35,11 @@ ON UPDATE CASCADE
 CREATE TABLE Order_Items(
 Order_item_id INT PRIMARY KEY,
 Order_id INT,
-Products_id INT,
+Product_id INT,
 quantity INT,
 price_at_purchase INT,
 FOREIGN KEY (Order_id) REFERENCES  Orders(Order_id),
-FOREIGN KEY (Products_id) REFERENCES Products(Products_id)
+FOREIGN KEY (Product_id) REFERENCES Products(Product_id)
 );
 
 CREATE TABLE Payments(
@@ -60,14 +55,16 @@ FOREIGN KEY (Order_id) REFERENCES  Orders(Order_id)
 CREATE TABLE Reviews(
 Review_id INT PRIMARY KEY,
 Customer_id INT, 
-Products_id INT, 
+Product_id INT, 
 rating INT CHECK (rating BETWEEN 1 AND 5),
 comment VARCHAR(50), 
-review_date DATE
+review_date DATE,
+FOREIGN KEY (Customer_id ) REFERENCES  Customers(Customer_id ),
+FOREIGN KEY (Product_id) REFERENCES  Products(Product_id)
 );
 
 INSERT INTO Customers
-(Customer_id ,Customer_name ,Customer_number ,Customer_location)
+(Customer_id ,Customer_name,Customer_email ,Customer_number ,Customer_location,date)
 VALUES 
 (101, 'Ali Khan', 'ali.khan@gmail.com', '03001234567', 'Karachi, Pakistan', '2024-01-10'),
 (102, 'Sara Ahmed', 'sara.ahmed@yahoo.com', '03019876543', 'Lahore, Pakistan', '2024-02-15'),
@@ -76,7 +73,7 @@ VALUES
 (105, 'Hamza Ali', 'hamza.ali@gmail.com', '03033445566', 'Rawalpindi, Pakistan', '2024-05-11');
 
 INSERT INTO Products
-(Products_id,Products_name ,price ,added_date)
+(Product_id,Product_name,category ,price ,stock_quantity,added_date)
 VALUES
 (201, 'iPhone 14', 'Electronics', 250000, 15, '2024-01-20'),
 (202, 'Samsung Galaxy S23', 'Electronics', 220000, 10, '2024-01-25'),
@@ -88,16 +85,17 @@ VALUES
 (208, 'Harry Potter Book Set', 'Books', 12000, 40, '2024-04-01');
 
 INSERT INTO Orders
-(Order_id ,Customer_id ,category,order_date ,total_amount)
+(Order_id, Customer_id, order_date, total_amount, status)
 VALUES
-(301, 101, '2024-03-12', 250000, 'Delivered'),
-(302, 102, '2024-03-15', 6000, 'Delivered'),
-(303, 103, '2024-04-02', 220000, 'Shipped'),
-(304, 104, '2024-04-05', 18000, 'Delivered'),
-(305, 105, '2024-04-08', 37000, 'Pending');
+(301, 101, '2024-03-12', 250000, 'COMPLETED'),
+(302, 102, '2024-03-15', 6000, 'COMPLETED'),
+(303, 103, '2024-04-02', 220000, 'IN_PROGRESS'),
+(304, 104, '2024-04-05', 18000, 'COMPLETED'),
+(305, 105, '2024-04-08', 37000, 'PENDING');
+
 
 INSERT INTO Order_Items
-(Order_item_id,Order_id ,Products_id ,quantity,price_at_purchase )
+(Order_item_id,Order_id ,Product_id ,quantity,price_at_purchase )
 VALUES
 (401, 301, 201, 1, 250000),
 (402, 302, 205, 1, 6000),
@@ -107,16 +105,16 @@ VALUES
 (406, 305, 207, 1, 25000);
 
 INSERT INTO Payments
-(Payment_id ,Order_id, payment_method  ,payment_date , payment_status)
+(Payment_id, Order_id, payment_method, amount_paid, payment_date, payment_status)
 VALUES
-(501, 301, 'Credit Card', 250000, '2024-03-12', 'Successful'),
-(502, 302, 'Cash on Delivery', 6000, '2024-03-15', 'Successful'),
-(503, 303, 'Credit Card', 220000, '2024-04-02', 'Pending'),
-(504, 304, 'Wallet', 18000, '2024-04-05', 'Successful'),
-(505, 305, 'Credit Card', 37000, '2024-04-08', 'Pending');
+(501, 301, 'CARD', 250000, '2024-03-12', 'COMPLETED'),
+(502, 302, 'CASH', 6000, '2024-03-15', 'COMPLETED'),
+(503, 303, 'CARD', 220000, '2024-04-02', 'IN_PROGRESS'),
+(504, 304, 'CASH', 18000, '2024-04-05', 'COMPLETED'),
+(505, 305, 'CARD', 37000, '2024-04-08', 'PENDING');
 
 INSERT INTO Reviews
-(Review_id ,Products_id , rating , review_date)
+(Review_id,Customer_id ,Product_id , rating ,comment, review_date)
 VALUES
 (601, 101, 201, 5, 'Amazing phone, worth the price!', '2024-03-20'),
 (602, 102, 205, 4, 'Good quality jeans, very comfortable.', '2024-03-25'),
@@ -125,10 +123,66 @@ VALUES
 (605, 105, 206, 4, 'AirPods have great sound quality.', '2024-04-12');
 
 
+SELECT * 
+FROM Products
+WHERE category='Electronics';
 
+SELECT * 
+FROM Customers
+WHERE Customer_id= 101;
 
+SELECT COUNT(*) AS total_customers
+FROM Customers;
 
+SELECT c.Customer_name,c.Customer_email,o.Order_id
+FROM Customers c
+JOIN Orders o 
+ON c.Customer_id = o.Customer_id;
 
+SELECT Product_name,price
+FROM Products
+ORDER BY price DESC
+LIMIT 5;
 
+SELECT P.Product_name,P.price,P.stock_quantity,O.Order_id
+FROM Orders O
+JOIN Order_Items OI ON O.Order_id = OI.Order_id
+JOIN Products P ON OI.Product_id = P.Product_id;
 
+SELECT product_id , rating
+FROM Reviews
+WHERE rating>=4;
 
+SELECT SUM(quantity * price_at_purchase) AS revenue
+FROM Order_Items;
+
+SELECT Customer_id, SUM(total_amount) AS total_spent
+FROM Orders
+GROUP BY Customer_id;
+
+SELECT Product_id,Product_name,stock_quantity
+FROM Products 
+WHERE stock_quantity<5;
+
+SELECT p.Product_id,AVG(r.rating) AS avg_rating
+FROM Reviews r
+JOIN Products p
+ON p.product_id = r.product_id
+GROUP BY p.product_id;
+
+SELECT Customer_id, SUM(total_amount) AS total_spent
+FROM Orders
+GROUP BY Customer_id
+ORDER BY total_spent DESC
+LIMIT 1;
+
+SELECT P.Product_id, P.Product_name
+FROM  Products P
+LEFT JOIN Order_Items O
+ON P.Product_id = O.Product_id
+WHERE O.Product_id IS NULL;
+
+SELECT MONTH(order_date) AS order_month, 
+       SUM(total_amount) AS monthly_sales
+FROM Orders
+GROUP BY MONTH(order_date);
