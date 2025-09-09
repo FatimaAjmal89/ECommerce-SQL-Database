@@ -122,66 +122,84 @@ VALUES
 (604, 104, 204, 3, 'Shoes are stylish but a bit tight.', '2024-04-10'),
 (605, 105, 206, 4, 'AirPods have great sound quality.', '2024-04-12');
 
+-------------------------------------------------
+-- QUERIES SECTION
+-------------------------------------------------
+
+-- Get all products in Electronics category
 
 SELECT * 
 FROM Products
 WHERE category='Electronics';
 
+-- Get specific customer by ID
 SELECT * 
 FROM Customers
 WHERE Customer_id= 101;
 
+-- Count total number of customers
 SELECT COUNT(*) AS total_customers
 FROM Customers;
 
+-- Show customers with their orders
 SELECT c.Customer_name,c.Customer_email,o.Order_id
 FROM Customers c
 JOIN Orders o 
 ON c.Customer_id = o.Customer_id;
 
+-- Get top 5 expensive products
 SELECT Product_name,price
 FROM Products
 ORDER BY price DESC
 LIMIT 5;
 
+-- Show ordered products with details
 SELECT P.Product_name,P.price,P.stock_quantity,O.Order_id
 FROM Orders O
 JOIN Order_Items OI ON O.Order_id = OI.Order_id
 JOIN Products P ON OI.Product_id = P.Product_id;
 
+-- Get reviews with rating >= 4
 SELECT product_id , rating
 FROM Reviews
 WHERE rating>=4;
 
+-- Calculate total revenue
 SELECT SUM(quantity * price_at_purchase) AS revenue
 FROM Order_Items;
 
+-- Find total amount spent by each customer
 SELECT Customer_id, SUM(total_amount) AS total_spent
 FROM Orders
 GROUP BY Customer_id;
 
+-- Find products with low stock (<5)
 SELECT Product_id,Product_name,stock_quantity
 FROM Products 
 WHERE stock_quantity<5;
 
+-- Get average rating of each product
 SELECT p.Product_id,AVG(r.rating) AS avg_rating
 FROM Reviews r
 JOIN Products p
 ON p.product_id = r.product_id
 GROUP BY p.product_id;
 
+-- Find top spender
 SELECT Customer_id, SUM(total_amount) AS total_spent
 FROM Orders
 GROUP BY Customer_id
 ORDER BY total_spent DESC
 LIMIT 1;
 
+-- Find products that were never ordered
 SELECT P.Product_id, P.Product_name
 FROM  Products P
 LEFT JOIN Order_Items O
 ON P.Product_id = O.Product_id
 WHERE O.Product_id IS NULL;
 
+-- Monthly sales report
 SELECT MONTH(order_date) AS order_month, 
        SUM(total_amount) AS monthly_sales
 FROM Orders
